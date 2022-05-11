@@ -2,7 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
-using TelegramBot.DAL;
+using TelegramBot.DAL.EntityFramework.DataAccess;
 using TelegramBot.Domain;
 using TelegramBot.Domain.Commands;
 
@@ -11,7 +11,7 @@ namespace TelegramBot.Main.Core
     internal class UpdateHandler
     {
         private Dictionary<string, ICommand> _commands;
-        private readonly IUserRepository _userRepository = new UserRepository();
+        private readonly IUserRepository _userRepository = new DbUserRepository();
 
         private readonly ILogger _logger;
 
@@ -22,19 +22,25 @@ namespace TelegramBot.Main.Core
         }
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        
         {
             var chatId = update.Message.From.Id;
             var username = update.Message.From.Username;
 
-            var user = _userRepository.GetOrCreate(chatId, username);
+            var user = await _userRepository.GetOrCreate(chatId, username);
+            var commandContext = new CommandContext(_logger, botClient, _userRepository, update, user);
+            
+            _logger.LogInformation($"{user.Username} send message {commandContext.Message}");
 
-            var commandContext = new CommandContext(botClient, update, user);
             await HandleMessage(commandContext);
         }
 
         public async Task HandleMessage(CommandContext commandContext)
         {
-            _commands.TryGetValue(commandContext.Message, out ICommand command);
+            var commandKeyAndValue = GetKeyCommandAndValue(commandContext.Message);
+
+            _commands.TryGetValue(commandKeyAndValue.Item1, out ICommand command);
+            commandContext.Value = commandKeyAndValue.Item2;
 
             if(command is not null)
             {
@@ -43,6 +49,21 @@ namespace TelegramBot.Main.Core
             else
             {
                 await new HelpCommand().Invoke(commandContext);
+            }
+        }
+
+        private (string, string) GetKeyCommandAndValue(string message)
+        {
+            if (message.Contains(' ') is false)
+            {
+                return (message, String.Empty);
+            }
+            else
+            {
+                var spaceIndex = message.IndexOf(' ');
+                var commandKey = message.Substring(0, spaceIndex);
+                var commandValue = message.Substring(spaceIndex + 1, message.Length - spaceIndex - 1);
+                return (commandKey, commandValue);
             }
         }
 

@@ -8,7 +8,7 @@
 
         public Task Invoke(CommandContext commandContext)
         {
-            return commandContext.SendMessage($"Дата регистрации: {commandContext.User.RegistrationDate}");
+            return commandContext.SendMessage($"Дата регистрации: {commandContext.User.RegistrationDate.ToShortDateString()}");
         }
     }
 }

@@ -8,7 +8,7 @@
 
         public Task Invoke(CommandContext commandContext)
         {
-            return commandContext.SendMessage($"Текущее время: {DateTime.Now.ToShortTimeString()}:{DateTime.Now.TimeOfDay.Seconds}");
+            return commandContext.SendMessage($"Текущее время: {DateTime.Now.ToLongTimeString()}");
         }
     }
 }

@@ -19,8 +19,7 @@ namespace TelegramBot.Main.Core
 
         public void StartRecieve(CancellationTokenSource cancellationTokenSource, ILogger logger)
         {
-                #warning DELETE THIS
-            var botClient = new TelegramBotClient("5297582960:AAEuDqrstcxoLMgQdqN6j0gdXcmHhnpi_IY");
+            var botClient = new TelegramBotClient(Settings.Token);
 
             var _receiverOptions = new ReceiverOptions
             {

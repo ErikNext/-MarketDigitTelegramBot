@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using TelegramBot.DAL.EntityFramework.DataAccess;
 using TelegramBot.Main.Core;
 
 namespace Bot.Api 
@@ -11,6 +10,7 @@ namespace Bot.Api
 
         static void Main(string[] args)
         {
+            DbUserRepository db = new DbUserRepository();
             ILogger logger;
             using var loggerFactory = LoggerFactory.Create(builder =>
             {
@@ -24,6 +24,7 @@ namespace Bot.Api
 
             TelegramBot = new BotManager(logger);
             TelegramBot.Start();
+
             Console.ReadLine();
         }
     }
